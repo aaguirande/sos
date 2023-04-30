@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="tk.meceap.sos.ui.occurence.HomeFragment"
+        android:label="@string/menu_dashboard"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_gallery"
+        android:name="tk.meceap.sos.ui.gallery.GalleryFragment"
+        android:label="@string/menu_profile"
+        tools:layout="@layout/fragment_gallery" />
+    <fragment
+        android:id="@+id/nav_calendar"
+        android:name="tk.meceap.sos.ui.calendar.CalendarFragment"
+        android:label="@string/menu_calendar"
+        tools:layout="@layout/fragment_calendar" />
+
+    <fragment
+        android:id="@+id/nav_maps"
+        android:name="tk.meceap.sos.ui.maps.MapsFragment"
+        android:label="@string/menu_maps"
+        tools:layout="@layout/fragment_maps" />
+</navigation>

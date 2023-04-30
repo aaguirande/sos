@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:background="@drawable/blue_border_rounded_cornwe"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/occurrency_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arrombamento"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:fontFamily="@font/poppins_medium"
+                android:text="Status:" />
+
+            <TextView
+                android:id="@+id/status_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:drawableLeft="@drawable/call"
+                android:drawableTint="@color/green"
+                android:text="Atendido" />
+
+            <TextView
+                android:id="@+id/status_segment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:drawableLeft="@drawable/walking_mode"
+                android:drawableTint="@color/bluelight"
+                android:text="Dar seguimento" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/blue_fill__rounded_color"
+            android:backgroundTint="@color/bluelight"
+            android:drawableLeft="@drawable/end_location"
+            android:fontFamily="@font/poppins_medium"
+            android:padding="5dp"
+            android:text="-34.567, 65.399"
+            android:textColor="#fff"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

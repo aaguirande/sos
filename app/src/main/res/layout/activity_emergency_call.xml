@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:fillViewport="true"
+tools:context=".EmergencyCall">
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_marginBottom="16dp"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivLogo"
+            android:layout_width="200dp"
+            android:layout_height="150dp"
+            android:layout_marginStart="32dp"
+            android:src="@drawable/logo" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvKS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/ivLogo"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:text="@string/topic"
+            android:textColor="@color/colorPrimary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvKS"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="56dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/select"
+            android:textSize="18sp" />
+
+        <GridLayout
+            android:id="@+id/grid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvSL"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:columnCount="2">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/primaryTextColor"
+                android:clickable="true"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:rippleColor="@color/light_grey">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp">
+
+                    <RelativeLayout
+                        android:id="@+id/pp_avatar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <ProgressBar
+                            android:id="@+id/pp_progressbar"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/pp" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="4dp"
+                        android:layout_toRightOf="@+id/pp_avatar"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Police"
+                        android:textAllCaps="true"
+                        android:textColor="@color/textColorWhite"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/pt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/primaryTextColor"
+                android:clickable="true"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:rippleColor="@color/light_grey">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp">
+
+                    <RelativeLayout
+                        android:id="@+id/pt_avatar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <ProgressBar
+                            android:id="@+id/pt_progressbar"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/pt" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="4dp"
+                        android:layout_toRightOf="@+id/pt_avatar"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Trafic"
+                        android:textAllCaps="true"
+                        android:textColor="@color/textColorWhite"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/sensap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/primaryTextColor"
+                android:clickable="true"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:rippleColor="@color/light_grey">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp">
+
+                    <RelativeLayout
+                        android:id="@+id/sensap_avatar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <ProgressBar
+                            android:id="@+id/sensap_progressbar"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone" />
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/fire_fighter" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="4dp"
+                        android:layout_toRightOf="@+id/sensap_avatar"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Sensap"
+                        android:textAllCaps="true"
+                        android:textColor="@color/textColorWhite"
+                        android:textSize="16sp" />
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </GridLayout>
+
+        <TextView
+            android:id="@+id/tvSignIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/grid"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="32dp"
+            android:text="or else login continue with"
+            android:textSize="16sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvSignIn"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="32dp"
+            android:backgroundTint="@color/primaryTextColor"
+            android:padding="8dp"
+            android:text="@string/use_credentials"
+            android:textAllCaps="true"
+            android:textColor="@color/textColorWhite"
+            android:textSize="16sp"
+            app:rippleColor="@color/light_grey" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginBottom="24dp"
+            android:letterSpacing="0.1"
+            android:text="@string/copyright"
+            android:textSize="@dimen/twelve" />
+
+    </RelativeLayout>
+
+</LinearLayout>
+
+</ScrollView>
