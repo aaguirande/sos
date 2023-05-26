@@ -1,37 +1,23 @@
 package tk.meceap.sos;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.cometchat.pro.constants.CometChatConstants;
 import com.cometchat.pro.core.Call;
 import com.cometchat.pro.models.User;
-import com.cometchat.pro.uikit.ui_components.calls.call_manager.listener.CometChatCallListener;
-import com.cometchat.pro.uikit.ui_settings.UIKitSettings;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
-import androidx.core.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.view.GravityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -41,34 +27,27 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import tk.meceap.sos.constants.Constants;
 import tk.meceap.sos.constants.Core;
-import tk.meceap.sos.constants.Http;
-import tk.meceap.sos.constants.LocalStorage;
-import tk.meceap.sos.constants.UIKitApplication;
 import tk.meceap.sos.databinding.ActivityMainBinding;
 import tk.meceap.sos.models.Agent;
-import tk.meceap.sos.models.Occurency;
+import tk.meceap.sos.models.Occurrence;
+import tk.meceap.sos.ui.calendar.CalendarFragment;
+import tk.meceap.sos.ui.maps.MapsFragment;
+import tk.meceap.sos.ui.profile.ProfileFragment;
 
-import com.cometchat.pro.core.AppSettings;
 import com.cometchat.pro.core.CometChat;
 import com.cometchat.pro.exceptions.CometChatException;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.sql.SQLOutput;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
-    LocalStorage storage;
     public TextView nav_name, nav_email, nav_category;
     public NavController navController;
+    public boolean viewIsAtHome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Core.getInstance().setContext(this);
 
         updateCallID();
 
@@ -82,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_calendar, R.id.nav_maps)
+                R.id.nav_home, R.id.nav_profile, R.id.nav_calendar, R.id.nav_maps)
                 .setOpenableLayout(drawer)
                 .build();
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -94,20 +73,23 @@ public class MainActivity extends AppCompatActivity {
         nav_name = header.findViewById(R.id.nav_name);
         nav_email = header.findViewById(R.id.nav_email);
         nav_category = header.findViewById(R.id.nav_category);
+
+        Core.getInstance().setContext(this);
+        Core.getInstance().setMainActivity(this);
+        Core.getInstance().setNavController(navController);
+        Core.getInstance().isAgent(true);
+
         nav_email.setText(Core.getInstance().getUserLogged().getEmail());
 
-
-        System.out.println("+++++++++++++++++++++++=====================================++++++++++++++++++++++++++++++");
         //Initialize events calendar of agents
+        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlUserData + Core.getInstance().getUserLogged().getUserId(), Core.getInstance().getParamsAgent(), Constants.REQ_USER_AGENT);
+        Core.getInstance().serverRequest(Request.Method.POST, Constants.urlAgents, Core.getInstance().getParamsAgent(), Constants.REQ_AGENT);
         Core.getInstance().serverRequest(Request.Method.GET, Constants.urlEventsStatus, null, Constants.REQ_EVENTS_STATUS);
+        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlOccurrenceTypes, null, Constants.REQ_OCCURENCE_TYPE);
         //Initialize occurencies of agents
         Core.getInstance().serverRequest(Request.Method.GET, Constants.urlUserData + Core.getInstance().getUserLogged().getUserId(), null, Constants.REQ_AGENT);
-        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlDeparment, null, Constants.REQ_DEPARTMENT);
-        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlOccurenceTypes, null, Constants.REQ_OCCURENCE_TYPE);
-    }
-
-    private void initialize() {
-        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlEventsStatus, null, Constants.REQ_EVENTS_STATUS);
+        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlDepartment, null, Constants.REQ_DEPARTMENT);
+        Core.getInstance().serverRequest(Request.Method.GET, Constants.urlDistricts, null, Constants.REQ_DISTRICT);
     }
 
     private void updateCallID() {
@@ -135,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Core.getInstance().setContext(this);
             Core.getInstance().setAgent(true);
-            Core.getInstance().setOccurency(new Occurency());
+            Core.getInstance().setOccurency(new Occurrence());
         }
     }
 
@@ -175,11 +157,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        startActivity(new Intent(MainActivity.this, Splash.class));
-        overridePendingTransition(R.anim.slide_out_up, R.anim.slide_in_up);
-        Core.getInstance().setUserLogged(new Agent());
-        finish();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        }
+        if (!viewIsAtHome) { //if the current view is not the News fragment
+            navController.navigate(R.id.nav_home); //display the News fragment
+            viewIsAtHome = true;
+        } else {
+            super.onBackPressed();
+            startActivity(new Intent(MainActivity.this, EmergencyCall.class));
+            overridePendingTransition(R.anim.slide_out_up, R.anim.slide_in_up);
+            Core.getInstance().getUserLogged().setToken("");
+            finish();
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        return false;
     }
 
 }

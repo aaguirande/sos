@@ -41,6 +41,7 @@ import java.util.List;
 
 import tk.meceap.sos.R;
 import tk.meceap.sos.constants.Constants;
+import tk.meceap.sos.constants.Core;
 import tk.meceap.sos.directionhelpers.CalculateDistanceTime;
 
 public class MapsFragment extends Fragment implements
@@ -65,9 +66,8 @@ public class MapsFragment extends Fragment implements
     private OnMapReadyCallback callback = new OnMapReadyCallback() {
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            LatLng sydney = new LatLng(-34, 151);
-            googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            googleMap.addMarker(new MarkerOptions().position(Core.getInstance().getUserLocation()).title("Marker in Sydney"));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(Core.getInstance().getUserLocation()));
             gMap = googleMap;
             getMyLocation();
         }
@@ -78,6 +78,7 @@ public class MapsFragment extends Fragment implements
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        Core.getInstance().getMainActivity().viewIsAtHome = false;
         return inflater.inflate(R.layout.fragment_maps, container, false);
     }
 
@@ -118,17 +119,10 @@ public class MapsFragment extends Fragment implements
 
         gMap.setMyLocationEnabled(true);
         gMap.getUiSettings().setZoomControlsEnabled(true);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+                Core.getInstance().getUserLocation(), 16f);
+        gMap.animateCamera(cameraUpdate);
 
-        gMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-            @Override
-            public void onMyLocationChange(Location location) {
-                myLocation = location;
-                LatLng ltlng = new LatLng(location.getLatitude(), location.getLongitude());
-                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(
-                        ltlng, 16f);
-                gMap.animateCamera(cameraUpdate);
-            }
-        });
 
         //get destination location when user click on map
         gMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -138,7 +132,7 @@ public class MapsFragment extends Fragment implements
                 gMap.clear();
                 destinationLocation = latLng;
 
-                start = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
+                start = Core.getInstance().getUserLocation();
                 //start route finding
                 Findroutes(start, end, travelMode);
                 distance_task.getDirectionsUrl(start, end);
@@ -151,6 +145,33 @@ public class MapsFragment extends Fragment implements
                 });
             }
         });
+
+        if(Core.getInstance().getSelectedOccurency() != null){
+            System.out.println(Core.getInstance().getSelectedOccurency().toString());
+            System.out.println(Core.getInstance().getSelectedOccurency().getVictimAddress());
+            end = Core.getInstance().getLocaLatLng(
+                    Core.getInstance().getSelectedOccurency()
+                            .getVictimAddress()
+                            .split(",")
+            );
+            destinationLocation = end;
+
+            start = Core.getInstance().getUserLocation();
+            Findroutes(start, end, travelMode);
+            distance_task.getDirectionsUrl(Core.getInstance().getUserLocation(), Core.getInstance().getLocaLatLng(
+                    Core.getInstance().getSelectedOccurency()
+                            .getVictimAddress()
+                            .split(",")));
+            distance_task.setLoadListener(new CalculateDistanceTime.taskCompleteListener() {
+                @Override
+                public void taskCompleted(String[] time_distance) {
+                    time.setText("" + time_distance[1]);
+                    distance.setText("" + time_distance[0]);
+                }
+            });
+
+            Core.getInstance().setSelectedOccurency(null);
+        }
     }
 
     // function to find Routes.
@@ -161,7 +182,11 @@ public class MapsFragment extends Fragment implements
             Location loc = new Location("Final");
             loc.setLongitude(End.longitude);
             loc.setLatitude(End.latitude);
-            System.out.println(myLocation.distanceTo(loc));
+            Location locStart = new Location("Start");
+            locStart.setLongitude(Start.longitude);
+            locStart.setLatitude(Start.latitude);
+            System.out.println(locStart.distanceTo(loc));
+            //System.out.println((new Location(Start.latitude, End.longitude)).distanceTo(loc));
 
             Routing routing = new Routing.Builder()
                     .travelMode(travelMode)

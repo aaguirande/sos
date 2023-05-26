@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import tk.meceap.sos.R;
+import tk.meceap.sos.constants.Constants;
 
 public class CalculateDistanceTime {
 
@@ -59,7 +60,7 @@ public class CalculateDistanceTime {
             String output = "json";
 
             // Building the url to the web service
-            String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&mode="+travelMode+"&key="+ R.string.google_maps_key;
+            String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&mode="+travelMode+"&key="+ Constants.googleMapKey;
 
 
             DownloadTask downloadTask = new DownloadTask();
@@ -157,6 +158,7 @@ public class CalculateDistanceTime {
                 try {
                     jObject = new JSONObject(jsonData[0]);
                     DistanceTimeParser parser = new DistanceTimeParser();
+                    System.out.println(jsonData.toString());
 
                     // Starts parsing data
                     routes = parser.parse(jObject);

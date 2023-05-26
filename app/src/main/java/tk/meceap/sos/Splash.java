@@ -48,7 +48,6 @@ public class Splash extends AppCompatActivity {
 
     User user = new User();
     Boolean firstTime = true;
-    Boolean loading = true;
     TextView text;
     AppCompatImageView logo;
     final int REQUEST_CODE = 101;
@@ -77,6 +76,7 @@ public class Splash extends AppCompatActivity {
 
     public void initApp() {
         Core.getInstance().setContext(this);
+        Core.getInstance().isAgent(false);
 
         Context context = getApplicationContext();
         WifiManager wm = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -87,8 +87,15 @@ public class Splash extends AppCompatActivity {
         logo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!loading){
-                    Core.getInstance().serverLogin("citizen@gmail.com", "password", false);
+                text.setVisibility(View.GONE);
+
+                if(CometChat.getLoggedInUser() != null){
+                    text.setText(R.string.error_comet_chat);
+                    text.setVisibility(View.VISIBLE);
+                }
+
+                if(!Core.getInstance().isLoadingRequest()){
+                    Core.getInstance().serverLogin("citizen@gmail.com", "password", false, "citizen");
                 }
                 text.setText(R.string.error_process);
                 text.setVisibility(View.VISIBLE);
@@ -145,7 +152,7 @@ public class Splash extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (CometChat.getLoggedInUser() != null) {
-                            Core.getInstance().serverLogin("citizen@gmail.com", "password", false);
+                            Core.getInstance().serverLogin("citizen@gmail.com", "password", false, "citizen");
                         }
                     }
                 }, 2000);
@@ -166,7 +173,8 @@ public class Splash extends AppCompatActivity {
                     Snackbar.make(getCurrentFocus(), "Unable to login, verify you network", Snackbar.LENGTH_INDEFINITE).setAction("Try Again", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            startActivity(new Intent(Splash.this, LoginActivity.class));
+                            logo.callOnClick();
+                            //startActivity(new Intent(Splash.this, LoginActivity.class));
                         }
                     }).show();
             }

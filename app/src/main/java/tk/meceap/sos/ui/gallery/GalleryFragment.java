@@ -25,6 +25,8 @@ public class GalleryFragment extends Fragment {
         View root = binding.getRoot();
 
         final TextView textView = binding.profileName;
+        TextView tl = binding.totalLogin;
+        tl.setText("total_login");
         galleryViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }

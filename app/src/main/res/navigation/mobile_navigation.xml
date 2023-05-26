@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
-        android:name="tk.meceap.sos.ui.gallery.GalleryFragment"
+        android:id="@+id/nav_profile"
+        android:name="tk.meceap.sos.ui.profile.ProfileFragment"
         android:label="@string/menu_profile"
-        tools:layout="@layout/fragment_gallery" />
+        tools:layout="@layout/fragment_profile" />
     <fragment
         android:id="@+id/nav_calendar"
         android:name="tk.meceap.sos.ui.calendar.CalendarFragment"

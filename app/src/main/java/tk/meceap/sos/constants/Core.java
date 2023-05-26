@@ -1,12 +1,11 @@
 package tk.meceap.sos.constants;
 
 import static android.content.Context.LOCATION_SERVICE;
-import static com.android.volley.Request.Method.GET;
+import static com.android.volley.Request.Method.PATCH;
 import static com.android.volley.Request.Method.POST;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,33 +19,39 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
+import androidx.navigation.NavController;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.cometchat.pro.constants.CometChatConstants;
+import com.cometchat.pro.core.CometChat;
 import com.cometchat.pro.uikit.ui_components.calls.call_manager.listener.CometChatCallListener;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +60,6 @@ import java.util.Map;
 import tk.meceap.sos.EmergencyCall;
 import tk.meceap.sos.MainActivity;
 import tk.meceap.sos.R;
-import tk.meceap.sos.Splash;
 import tk.meceap.sos.adapters.CalendarEventAdapter;
 import tk.meceap.sos.models.Agent;
 import tk.meceap.sos.models.Calendar;
@@ -63,13 +67,13 @@ import tk.meceap.sos.models.CalendarEventLog;
 import tk.meceap.sos.models.CalendarEventStatus;
 import tk.meceap.sos.models.Call;
 import tk.meceap.sos.models.Department;
-import tk.meceap.sos.models.Occurency;
-import tk.meceap.sos.models.OccurencyStatus;
-import tk.meceap.sos.models.OccurencyType;
+import tk.meceap.sos.models.Occurrence;
+import tk.meceap.sos.models.OccurrenceStatus;
+import tk.meceap.sos.models.OccurrenceType;
+import tk.meceap.sos.models.Province;
 
 public class Core {
     private MainActivity mainActivity;
-    //private Splash mainActivity;
     private Context context;
     private View view;
     private Activity activity;
@@ -77,22 +81,25 @@ public class Core {
     private static volatile Core instance = null;
 
     private List<Agent> agents;
-    private List<Occurency> occurencies = new LinkedList<>();
-    private List<OccurencyStatus> occurencyStatuses = new LinkedList<>();
-    private List<OccurencyType> occurencyTypes = new LinkedList<>();
+    private List<Occurrence> occurencies = new LinkedList<>();
+    private List<OccurrenceStatus> occurrenceStatuses = new LinkedList<>();
+    private List<OccurrenceType> occurrenceTypes = new LinkedList<>();
 
     private List<Calendar> calendars = new LinkedList<>();
     private List<CalendarEventStatus> eventStatuses = new LinkedList<>();
 
     private List<Department> departments = new LinkedList<>();
+    private List<Province> provinces = new LinkedList<>();
 
     private Agent userLogged = new Agent();
     String location;
-    private Occurency occurency;
+    private Occurrence occurrence;
     private boolean isAgent = false;
+    private boolean isLoadingRequest = false;
     private RequestQueue requestQueue;
 
-    private Occurency selectedOccurency;
+    private Occurrence selectedOccurrence;
+    private int callAttempts = 0;
     private Calendar selectedCalendar;
 
     public Core() {
@@ -118,16 +125,25 @@ public class Core {
         this.activity = activity;
     }
 
+    private NavController navController;
     public void displaySelectedScreen(int itemId) {
-        mainActivity.navController.navigate(itemId);
+        navController.navigate(itemId);
     }
 
-    public Occurency getSelectedOccurency() {
-        return selectedOccurency;
+    public NavController getNavController() {
+        return navController;
     }
 
-    public void setSelectedOccurency(Occurency selectedOccurency) {
-        this.selectedOccurency = selectedOccurency;
+    public void setNavController(NavController navController) {
+        this.navController = navController;
+    }
+
+    public Occurrence getSelectedOccurency() {
+        return selectedOccurrence;
+    }
+
+    public void setSelectedOccurency(Occurrence selectedOccurrence) {
+        this.selectedOccurrence = selectedOccurrence;
     }
 
     public Calendar getSelectedCalendar() {
@@ -138,16 +154,19 @@ public class Core {
         this.selectedCalendar = selectedCalendar;
     }
 
-    public Occurency getOccurency() {
-        return occurency;
+    public Occurrence getOccurency() {
+        return occurrence;
     }
 
-    public void setOccurency(Occurency occurency) {
-        this.occurency = occurency;
+    public void setOccurency(Occurrence occurrence) {
+        this.occurrence = occurrence;
     }
 
     public boolean isAgent() {
         return isAgent;
+    }
+    public void isAgent(boolean isAgent) {
+        this.isAgent = isAgent;
     }
 
     public void setAgent(boolean agent) {
@@ -221,157 +240,19 @@ public class Core {
         this.userLogged = userLogged;
     }
 
-
-    public List<Occurency> getOccurencies() {
+    public List<Occurrence> getOccurencies() {
         return this.occurencies;
     }
 
-    public Occurency getOccurency(String id) {
-        for (Occurency data : this.occurencies) {
-            if (data.getId() == id)
-                return data;
-        }
-        return null;
-    }
-
-    public Occurency setOccurencies(JSONObject occurency) {
-        Occurency data;
-        try {
-            data = getOccurency(occurency.getString("occurency_id"));
-            if (data == null) {
-                data = new Occurency(occurency);
-                this.occurencies.add(data);
-            }
-        } catch (JSONException e) {
-            data = null;
-            e.printStackTrace();
-        }
-        return data;
-    }
-
-    public void setOccurencies() {
-        Map<String, String> params = new HashMap<String, String>();
-        Map<String, String> taskParams = new HashMap<String, String>();
-        Map<String, Map<String, String>> taskParams2 = new HashMap<String, Map<String, String>>();
-        Map<String, Map<String, String>> taskParams3 = new HashMap<String, Map<String, String>>();
-        Map<String, String> reminderParams = new HashMap<String, String>();
-        Map<String, String> metaParams = new HashMap<String, String>();
-        Map<String, String> params2 = new HashMap<String, String>();
-
-        taskParams.put("completed", String.valueOf(false));
-        taskParams.put("flag", null);
-        taskParams.put("allocated_to", null);
-
-        reminderParams.put("min", null);
-        reminderParams.put("max", null);
-
-        metaParams.put("start", String.valueOf(130));
-        metaParams.put("length", String.valueOf(10));
-        metaParams.put("sort", String.valueOf(false));
-        metaParams.put("search", "");
-        metaParams.put("forceInfo", String.valueOf(false));
-        metaParams.put("searchMode", "full");
-
-        params2.put("dateFilter", "all");
-        params2.put("overdue", null);
-
-        taskParams2.put("task", taskParams);
-        taskParams3.put("task", reminderParams);
-
-        params.put("filters", String.valueOf(taskParams2));
-        params.put("meta", String.valueOf(metaParams));
-        params.put("params", String.valueOf(params2));
-        params.put("intervals", String.valueOf(taskParams3));
-
-        Core.getInstance().addToRequestQueue(new JsonObjectRequest(GET,
-                Constants.urlNearAgents + "/tableData",//?filters=%7B%22tasks%22:%7B%22completed%22:false,%22flag%22:null,%22allocated_to%22:null%7D%7D&intervals=%7B%22tasks%22:%7B%22reminder%22:%7B%22min%22:null,%22max%22:null%7D%7D%7D&params=%7B%22dateFilter%22:%22all%22,%22overdue%22:null%7D&meta=%7B%22start%22:130,%22length%22:10,%22sort%22:false,%22search%22:%22%22,%22forceInfo%22:false,%22searchMode%22:%22full%22%7D",
-                new JSONObject(params),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.i("Success Response: ", response.toString());
-                        try {
-                            System.out.println("/////////////////////////////////////////////////////////////");
-                            System.out.println(response.getJSONArray("data"));
-                            if (response.getString("status").equals("success")) {
-                                Toast.makeText(context, "Data retrived", Toast.LENGTH_SHORT).show();
-                                JSONArray occurencies = response.getJSONArray("occurencies");
-
-                                for (int i = 0; i < occurencies.length(); i++)
-                                    setOccurencies(occurencies.getJSONObject(i));
-                            } else
-                                Snackbar.make(view, response.getString("message"), Snackbar.LENGTH_LONG).show();
-
-
-                        } catch (JSONException e) {
-                            Toast.makeText(context, "Invalid Response From Server", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.i("Error Response: ", String.valueOf(error));
-                Toast.makeText(context, "Invalid Response From Server", Toast.LENGTH_LONG).show();
-            }
-        }) {
-            //This is for Headers If You Needed
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/json; charset=UTF-8");
-                params.put("X-Requested-With", "XMLHttpRequest");
-                params.put("Authorization", "Bearer " + Core.getInstance().getUserLogged().getToken());
-                return params;
-            }
-/*
-            //Pass Your Parameters here
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                Map<String, String> taskParams = new HashMap<String, String>();
-                Map<String, Map<String, String>> taskParams2 = new HashMap<String, Map<String, String>>();
-                Map<String, Map<String, String>> taskParams3 = new HashMap<String, Map<String, String>>();
-                Map<String, String> reminderParams = new HashMap<String, String>();
-                Map<String, String> metaParams = new HashMap<String, String>();
-                Map<String, String> params2 = new HashMap<String, String>();
-
-                taskParams.put("completed", String.valueOf(false));
-                taskParams.put("flag", null);
-                taskParams.put("allocated_to", null);
-
-                reminderParams.put("min", null);
-                reminderParams.put("max", null);
-
-                metaParams.put("start", String.valueOf(130));
-                metaParams.put("length", String.valueOf(10));
-                metaParams.put("sort", String.valueOf(false));
-                metaParams.put("search", "");
-                metaParams.put("forceInfo", String.valueOf(false));
-                metaParams.put("searchMode", "full");
-
-                params2.put("dateFilter", "all");
-                params2.put("overdue", null);
-
-                taskParams2.put("task", taskParams);
-                taskParams3.put("task", reminderParams);
-
-                params.put("filters", String.valueOf(taskParams2));
-                params.put("meta", String.valueOf(metaParams));
-                params.put("params", String.valueOf(params2));
-                params.put("intervals", String.valueOf(taskParams3));
-
-                return params;
-            }*/
-        }, Constants.REGISTER_TAG);
-    }
-
-    public void serverLogin(String email, String pass, boolean remember) {
+    public void serverLogin(String email, String pass, boolean remember, String login) {
         Core.getInstance().setAgent(remember);
+        userLogged.setToken("");
         JSONObject params = new JSONObject();
         try {
             params.put("email", email)
                     .put("device_name", "mobile")
-                    .put("login_type", "citizen")
+                    .put("login_type", login)
+                    .put("call_id", CometChat.getLoggedInUser().getUid())
                     .put("location", Core.getInstance().getLocation())
                     .put("password", pass)
                     .put("remember", remember);
@@ -381,7 +262,12 @@ public class Core {
         }
     }
 
+    public boolean isLoadingRequest() {
+        return isLoadingRequest;
+    }
+
     public void serverRequest(int Method, String url, JSONObject params, String caso) {
+        isLoadingRequest = true;
         if (userLogged.getToken() == null)
             Core.getInstance().addToRequestQueue(new JsonObjectRequest(Method,
                     url,
@@ -389,14 +275,17 @@ public class Core {
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
+                            System.out.println(response.toString());
                             serverResponse(caso, response);
+                            isLoadingRequest = false;
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.i("Error Response: ", String.valueOf(error));
-                            Toast.makeText(context, "Invalid Response From Server", Toast.LENGTH_LONG).show();
+                            isLoadingRequest = false;
+                            Log.i("Error Response: " + caso, String.valueOf(error.getMessage()));
+                            Toast.makeText(context, "Invalid Response From Server: " + caso, Toast.LENGTH_LONG).show();
                         }
                     }), Constants.REGISTER_TAG);
         else
@@ -407,13 +296,15 @@ public class Core {
                         @Override
                         public void onResponse(JSONObject response) {
                             serverResponse(caso, response);
+                            isLoadingRequest = false;
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.i("Error Response: ", String.valueOf(error));
-                            Toast.makeText(context, "Invalid Response From Server", Toast.LENGTH_LONG).show();
+                            isLoadingRequest = false;
+                            Log.i("Error Response: " + caso, String.valueOf(error));
+                            Toast.makeText(context, "Invalid Response From Server: " + caso, Toast.LENGTH_LONG).show();
                         }
                     }) {
                 public Map<String, String> getHeaders() {
@@ -426,7 +317,14 @@ public class Core {
 
     public void serverResponse(String caso, JSONObject response) {
         Log.i("\n\n\n\nSuccess Response: " + caso, response.toString());
+        System.out.println(response.toString());
         switch (caso) {
+            case Constants.REQ_AGENT_LOCATION:
+                System.out.println("======================================================");
+                Log.i("\n\n\n\nSuccess Response: " + caso, response.toString());
+                System.out.println(response.toString());
+                System.out.println("======================================================");
+                break;
             case Constants.REQ_LOGIN:
                 try {
                     Core.getInstance().setUserLogged(new Agent(
@@ -434,8 +332,7 @@ public class Core {
                             response.getJSONObject("user").getString("id"),
                             response.getJSONObject("user").getString("person_id"),
                             response.getJSONObject("user").getString("email"),
-                            "",
-                            ""
+                            response.getString("event_id")
                     ));
                     if (isAgent())
                         activity.startActivity(new Intent(getContext(), MainActivity.class));
@@ -445,10 +342,11 @@ public class Core {
                     activity.finish();
                 } catch (JSONException e) {
                     setAgent(false);
-                    TextView text = activity.findViewById(R.id.error_txt);
-                    text.setText(R.string.error_conect);
-                    text.setVisibility(View.VISIBLE);
-                    e.printStackTrace();
+                    try {
+                        alertFail(response.getString("error"));
+                    } catch (JSONException ex) {
+                        alertFail("Unable to proccess this request, contact administrator");
+                    }
                 }
                 break;
             case Constants.REQ_HELP:
@@ -457,35 +355,42 @@ public class Core {
                     activity.findViewById(R.id.pt_progressbar).setVisibility(View.GONE);
                     activity.findViewById(R.id.sensap_progressbar).setVisibility(View.GONE);
                     JSONArray dados = response.getJSONArray("dados");
+                    System.out.println(dados);
 
-                    for (int i = 0; i < dados.length(); i++) {
-                        occurency.setCallList(new Call(
-                                dados.getJSONObject(i).getString("call_id"),
-                                dados.getJSONObject(i).getString("location"),
-                                dados.getJSONObject(i).getString("distance_value"),
-                                dados.getJSONObject(i).getString("distance_text"),
-                                dados.getJSONObject(i).getString("duration_value"),
-                                dados.getJSONObject(i).getString("duration_text")
-                        ));
+                    if(!dados.isNull(0)){
+                        for (int i = 0; i < dados.length(); i++) {
+                            occurrence.setCallList(new Call(
+                                    dados.getJSONObject(i).getString("call_id"),
+                                    dados.getJSONObject(i).getString("location"),
+                                    dados.getJSONObject(i).getString("distance_value"),
+                                    dados.getJSONObject(i).getString("distance_text"),
+                                    dados.getJSONObject(i).getString("duration_value"),
+                                    dados.getJSONObject(i).getString("duration_text")
+                            ));
+                        }
+                        occurrence.setId(response.getJSONObject("param").getString("task"));
+                        occurrence.setAgentsAddress(response.getString("agents_address"));
+                        occurrence.setAgentsUid(response.getString("call_ids"));
+
+                        Core.getInstance().setOccurency(occurrence);
+                        System.out.println("\n\n\n\n" + occurrence.toString());
+                        Core.getInstance().setCallAttempts(0);
+                        makeCall(occurrence.getCallList().get(0).getCallId());
+                    } else {
+                        alertFail(activity.getResources().getString(R.string.error_agents));
                     }
-                    occurency.setId(response.getJSONObject("param").getString("task"));
-                    occurency.setAgents_address(response.getString("agents_address"));
-                    occurency.setAgents_uid(response.getString("call_ids"));
 
-                    Core.getInstance().setOccurency(occurency);
-                    System.out.println("\n\n\n\n" + occurency.toString());
-                    makeCall(occurency.getCallList().get(0).getCallId());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 break;
-            case Constants.REQ_EVENTS:
-                System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
+            case Constants.REQ_AGENT_CALENDAR:
+                System.out.println(caso + "\n\n\nVendo a resposta\n\n\n\n" + response.toString());
                 try {
                     JSONArray dados = response.getJSONArray("data");
 
                     for (int i = 0; i < dados.length(); i++) {
-                        if (!isCalendarById(calendars, dados.getJSONObject(i).getString("id")))
+                        if (!isCalendarById(calendars, dados.getJSONObject(i).getString("event_id") + dados.getJSONObject(i).getString("event_id")))
                             calendars.add(new Calendar(dados.getJSONObject(i)));
                     }
                     System.out.println(calendars.toString());
@@ -499,41 +404,39 @@ public class Core {
                     JSONArray dados = response.getJSONArray("data");
 
                     for (int i = 0; i < dados.length(); i++) {
-                        if (!isOccurencyById(occurencies, dados.getJSONObject(i).getString("id")))
-                            occurencies.add(new Occurency(dados.getJSONObject(i)));
+                        if (!isOccurrenceById(occurencies, dados.getJSONObject(i).getString("id")))
+                            occurencies.add(new Occurrence(dados.getJSONObject(i)));
                     }
                     System.out.println(occurencies.toString());
+                    this.mainActivity.navController.navigate(R.id.nav_home);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case Constants.REQ_USER_AGENT:
+                System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
+                try {
+                    JSONObject dados = response.getJSONObject("user");
+                    Core.getInstance().getUserLogged().setUserAgent(dados);
+
+                    System.out.println(userLogged.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 break;
             case Constants.REQ_AGENT:
-                System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
+                System.out.println("\n\n\nVendo a resposta do agente\n\n\n\n" + response.toString());
                 try {
-                    JSONArray dados = response.getJSONArray("user");
+                    JSONObject dados = response.getJSONArray("data").getJSONObject(0);
+                    Core.getInstance().getUserLogged().setAgent(dados);
 
-                    for (int i = 0; i < dados.length(); i++) {
-                        if (!isOccurencyById(occurencies, dados.getJSONObject(i).getString("id")))
-                            occurencies.add(new Occurency(dados.getJSONObject(i)));
-                    }
-                    System.out.println(occurencies.toString());
+                    this.mainActivity.nav_category.setText(Core.getInstance().getUserLogged().getAgentPatent());
+                    this.mainActivity.nav_name.setText(Core.getInstance().getUserLogged().getName());
+
+                    System.out.println(userLogged.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                /*
-                *
-                * {"user":{"id":1,"person_id":1,"group_id":1,"role_id":1,
-                * "email":"meceap.server@gmail.com","is_active":true,"created_by":null,
-                * "updated_by":null,"created_at":"2023-04-23T06:57:25.000000Z",
-                * "updated_at":"2023-04-23T06:57:25.000000Z","loginCount":58,
-                * "actionLogCount":1301,"daysSinceMember":7,"rating":43,
-                * "person":{"id":1,"name":"Ant\u00f3nio Adriano","appellative":
-                * "Guirande","birthday":"1994-08-27T21:00:00.000000Z","phone":
-                * "+258840415421"},"group":{"id":1,"name":"Administrators"},
-                * "role":{"id":1,"name":"admin"},"avatar":{"id":1}}}
-                 *
-                *
-                * */
                 break;
             case Constants.REQ_EVENTS_STATUS:
                 System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
@@ -544,7 +447,8 @@ public class Core {
                         if (!isCalendarEventStatusById(eventStatuses, dados.getJSONObject(i).getString("id")))
                             eventStatuses.add(new CalendarEventStatus(dados.getJSONObject(i)));
                     } //after inititialization of Event calendar propety
-                    Core.getInstance().serverRequest(Request.Method.GET, Constants.urlAgentsCalendar, null, Constants.REQ_EVENTS);
+                    System.out.println(eventStatuses.toString());
+                    Core.getInstance().serverRequest(Request.Method.POST, Constants.urlAgentsCalendar, Core.getInstance().getParamsAgent(), Constants.REQ_AGENT_CALENDAR);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -562,16 +466,38 @@ public class Core {
                     e.printStackTrace();
                 }
                 break;
+            case Constants.REQ_DISTRICT:
+                System.out.println("==========================================================");
+                Log.i("\n\n\n\nSuccess Response Province: " + caso, response.toString());
+                System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
+                try {
+                    JSONArray dados = response.getJSONArray("data");
+
+                    for (int i = 0; i < dados.length(); i++) {
+                        if (!isProvinceById(provinces, dados.getJSONObject(i).getString("id")))
+                            provinces.add(new Province(dados.getJSONObject(i)));
+                    } //after inititialization of occurency propriety
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                break;
             case Constants.REQ_OCCURENCE_TYPE:
                 System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
                 try {
                     JSONArray dados = response.getJSONArray("data");
 
                     for (int i = 0; i < dados.length(); i++) {
-                        if (!isOccurencyTypeById(occurencyTypes, dados.getJSONObject(i).getString("id")))
-                            occurencyTypes.add(new OccurencyType(dados.getJSONObject(i)));
+                        if (!isOccurencyTypeById(occurrenceTypes, dados.getJSONObject(i).getString("id")))
+                            occurrenceTypes.add(new OccurrenceType(dados.getJSONObject(i)));
                     } //after inititialization of Event calendar propety
-                    Core.getInstance().serverRequest(Request.Method.GET, Constants.urlOccurencies, null, Constants.REQ_OCCURENCES);
+                    Core.getInstance().serverRequest(POST, Constants.urlTasksOptions, getParamsOccurrence(false, "", "all", "", ""), Constants.REQ_OCCURENCES);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case Constants.REQ_UPDATE_OCCURRENCE:
+                try {
+                    Toast.makeText(context, response.getString("message"), Toast.LENGTH_LONG).show();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -579,8 +505,51 @@ public class Core {
         }
     }
 
-    public boolean isOccurencyById(List<Occurency> data, String id) {
-        for (Occurency d : data) {
+    public JSONObject getParamsOccurrence(Boolean completed, String occurrenceType, String dateType, String startDate, String endDate) {
+        JSONObject params = new JSONObject();
+        try {
+            params
+                    .put("completed", completed)
+                    .put("department", 3)
+                    .put("occurrence_type", occurrenceType)
+                    .put("user_id", Core.getInstance().getUserLogged().getUserId())
+                    .put("start_date", startDate)
+                    .put("end_date", endDate)
+                    .put("date_type", dateType) //today, yesterday, this_week, this_month, all
+            ;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return params;
+    }
+
+    public JSONObject getParamsAgent() {
+        JSONObject params = new JSONObject();
+        try {
+            params
+                    .put("person_id", Core.getInstance().getUserLogged().getPersonId())
+                    .put("user_id", Core.getInstance().getUserLogged().getUserId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return params;
+    }
+
+    public JSONObject getParamsAgentLocation() {
+        JSONObject params = new JSONObject();
+        try {
+            params
+                    .put("user_id", Core.getInstance().getUserLogged().getUserId())
+                    .put("event_id", Core.getInstance().getUserLogged().getEventId())
+                    .put("location", Core.getInstance().getLocation());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return params;
+    }
+
+    public boolean isOccurrenceById(List<Occurrence> data, String id) {
+        for (Occurrence d : data) {
             if (d.getId().equals(id))
                 return true;
         }
@@ -595,8 +564,16 @@ public class Core {
         return false;
     }
 
-    public boolean isOccurencyTypeById(List<OccurencyType> data, String id) {
-        for (OccurencyType d : data) {
+    public boolean isProvinceById(List<Province> data, String id) {
+        for (Province d : data) {
+            if (d.getId().equals(id))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean isOccurencyTypeById(List<OccurrenceType> data, String id) {
+        for (OccurrenceType d : data) {
             if (d.getId().equals(id))
                 return true;
         }
@@ -666,22 +643,22 @@ public class Core {
                 .setTitle("Failed")
                 .setIcon(R.drawable.ic_baseline_warning_24)
                 .setMessage(s)
-                .setPositiveButton("OK", (dialog, i) -> {
+                /*.setNegativeButton("Cancel", (dialog, i) -> {
                     dialog.dismiss();
-                })
-                .setNegativeButton("Cancel", ((dialog, which) -> {
+                })*/
+                .setPositiveButton("Ok", ((dialog, which) -> {
                     dialog.dismiss();
                 })).show();
     }
 
     RecyclerView itemsEvents;
-    public void alertDialog(List<CalendarEventLog> eventLog) {
+    public void eventCalendarLogs(List<CalendarEventLog> eventLog) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity)
                 .setTitle("Event log")
                 .setPositiveButton("OK", (dialog, i) -> {
                     dialog.dismiss();
                 })
-                .setIcon(R.drawable.calendar_startblue);
+                .setIcon(R.drawable.logo);
 
         LayoutInflater inflater = activity.getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.item_event_calendar, null);
@@ -695,32 +672,174 @@ public class Core {
         alertDialog.show();
     }
 
+    public void updateOccurrenceDialog(int index) {
+        EditText victimName, occurrenceDetails;
+        SwitchCompat complete;
+        RadioButton error, warning, info, success;
+        ArrayAdapter<String> adapter;
+        AutoCompleteTextView completeTextView;
+
+
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.occurrence_update_dialog, null);
+
+        completeTextView = dialogView.findViewById(R.id.autoCompleteTextView);
+        victimName = dialogView.findViewById(R.id.victim_name);
+        occurrenceDetails = dialogView.findViewById(R.id.occurrence_details);
+
+        complete = dialogView.findViewById(R.id.occurrence_completed);
+        error = dialogView.findViewById(R.id.radio_error);
+        warning = dialogView.findViewById(R.id.radio_warning);
+        info = dialogView.findViewById(R.id.radio_info);
+        success = dialogView.findViewById(R.id.radio_success);
+
+        //Initializing form to update occurrence
+        adapter = new ArrayAdapter<String>(dialogView.getContext(), R.layout.dropdown_list, getListOccurrenceType());
+
+        completeTextView.setAdapter(adapter);
+        completeTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println(  "\n\n\n\n++++++++++++++++++++++++\n\n\n\n\n"+parent.getItemAtPosition(position).toString());
+                getSelectedOccurency().setOccurrenceType(getOccurrenceTypeByName(parent.getItemAtPosition(position).toString()));
+            }
+        });
+
+        switch (getSelectedOccurency().getFlag()){
+            case "1": error.setChecked(true); break;
+            case "2": warning.setChecked(true); break;
+            case "3": info.setChecked(true); break;
+            case "4": success.setChecked(true); break;
+        }
+
+        switch (getSelectedOccurency().getCompleted()){
+            case "0": complete.setChecked(false); break;
+            case "1": complete.setChecked(true); break;
+        }
+
+        victimName.setText(getSelectedOccurency().getVictimName());
+        occurrenceDetails.setText(getSelectedOccurency().getDetails());
+
+        //
+        error.setOnClickListener(v -> getSelectedOccurency().setFlag("1"));
+        warning.setOnClickListener(v -> getSelectedOccurency().setFlag("2"));
+        info.setOnClickListener(v -> getSelectedOccurency().setFlag("3"));
+        success.setOnClickListener(v -> getSelectedOccurency().setFlag("4"));
+
+        complete.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked)  getSelectedOccurency().setCompleted("1");
+            else  getSelectedOccurency().setCompleted("0");
+        });
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity)
+                .setTitle("Update occurrence")
+                .setNegativeButton("Cancel", (dialog, i) -> {
+                    getSelectedOccurency().setVictimName(victimName.getText().toString());
+                    getSelectedOccurency().setDetails(occurrenceDetails.getText().toString());
+
+                    occurencies.get(index).setVictimName(getSelectedOccurency().getVictimName());
+                    occurencies.get(index).setDetails(getSelectedOccurency().getDetails());
+                    occurencies.get(index).setCompleted(getSelectedOccurency().getCompleted());
+                    occurencies.get(index).setFlag(getSelectedOccurency().getFlag());
+                    occurencies.get(index).setOccurrenceType(getSelectedOccurency().getOccurrenceType());
+
+                    System.out.println(occurencies.get(index).toString());
+                    dialog.dismiss();
+
+                    mainActivity.navController.navigate(R.id.nav_home);
+                })
+                .setPositiveButton("Save", (dialog, i) -> {
+                    getSelectedOccurency().setVictimName(victimName.getText().toString());
+                    getSelectedOccurency().setDetails(occurrenceDetails.getText().toString());
+
+                    occurencies.get(index).setVictimName(getSelectedOccurency().getVictimName());
+                    occurencies.get(index).setDetails(getSelectedOccurency().getDetails());
+                    occurencies.get(index).setCompleted(getSelectedOccurency().getCompleted());
+                    occurencies.get(index).setFlag(getSelectedOccurency().getFlag());
+                    occurencies.get(index).setOccurrenceType(getSelectedOccurency().getOccurrenceType());
+
+                    System.out.println(occurencies.get(index).toString());
+                    System.out.println(Constants.urlTasks +"/"+ occurencies.get(index).getId());
+                    System.out.println(occurencies.get(index).getUpdateParams());
+                    Core.getInstance().serverRequest(Request.Method.PATCH, Constants.urlTasks +"/"+ occurencies.get(index).getId(), occurencies.get(index).getUpdateParams(), Constants.REQ_UPDATE_OCCURRENCE);
+
+                    mainActivity.navController.navigate(R.id.nav_home);
+                    dialog.dismiss();
+                })
+                .setIcon(R.drawable.logo);
+
+        dialogBuilder.setView(dialogView);
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public List<String> getListOccurrenceType(){
+        List<String> items = new ArrayList<String>();
+        for (OccurrenceType d : occurrenceTypes) {
+            items.add(d.getName());
+        }
+        return items;
+    }
+
+    public OccurrenceType getOccurrenceTypeByName(String name){
+        for (OccurrenceType d : occurrenceTypes) {
+            System.out.println(d.getName().equalsIgnoreCase(name));
+            if(d.getName().equalsIgnoreCase(name)) return d;
+        }
+        return null;
+    }
+
+    private LatLng userLocation;
     private final LocationListener mLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
             System.out.println("\n\n\n\nLocation: " + String.format("%.6f", location.getLatitude()) + "," + String.format("%.6f", location.getLongitude()));
-            setLocation(String.format("%.6f", location.getLatitude()) + "," + String.format("%.6f", location.getLongitude()));
+            setLocation(
+                    String.format("%.6f", location.getLatitude()).replace(",", ".")
+                            + "," +
+                    String.format("%.6f", location.getLongitude()).replace(",", ".")
+            );
+            userLocation = new LatLng(
+                    Double.valueOf(String.format("%.6f", location.getLatitude()).replace(",", ".")),
+                    Double.valueOf(String.format("%.6f", location.getLongitude()).replace(",", "."))
+            );
+
+            if(isAgent)
+                Core.getInstance().serverRequest(Request.Method.POST, Constants.urlAgentsLocation, getParamsAgentLocation(), Constants.REQ_AGENT_LOCATION);
         }
     };
 
-    public void setOccurencies(List<Occurency> occurencies) {
+    public  LatLng getLocaLatLng(String[] s){
+        System.out.println(Arrays.toString(s));
+        return new LatLng(
+                Double.valueOf(s[0]),
+                Double.valueOf(s[1])
+        );
+    }
+
+    public LatLng getUserLocation() {
+        return userLocation;
+    }
+
+    public void setOccurencies(List<Occurrence> occurencies) {
         this.occurencies = occurencies;
     }
 
-    public List<OccurencyStatus> getOccurencyStatuses() {
-        return occurencyStatuses;
+    public List<OccurrenceStatus> getOccurencyStatuses() {
+        return occurrenceStatuses;
     }
 
-    public void setOccurencyStatuses(List<OccurencyStatus> occurencyStatuses) {
-        this.occurencyStatuses = occurencyStatuses;
+    public void setOccurencyStatuses(List<OccurrenceStatus> occurrenceStatuses) {
+        this.occurrenceStatuses = occurrenceStatuses;
     }
 
-    public List<OccurencyType> getOccurencyTypes() {
-        return occurencyTypes;
+    public List<OccurrenceType> getOccurencyTypes() {
+        return occurrenceTypes;
     }
 
-    public void setOccurencyTypes(List<OccurencyType> occurencyTypes) {
-        this.occurencyTypes = occurencyTypes;
+    public void setOccurencyTypes(List<OccurrenceType> occurrenceTypes) {
+        this.occurrenceTypes = occurrenceTypes;
     }
 
     public List<Calendar> getCalendars() {
@@ -737,6 +856,14 @@ public class Core {
 
     public void setEventStatuses(List<CalendarEventStatus> eventStatuses) {
         this.eventStatuses = eventStatuses;
+    }
+
+    public int getCallAttempts() {
+        return callAttempts;
+    }
+
+    public void setCallAttempts(int callAttempts) {
+        this.callAttempts = callAttempts;
     }
 
     public List<Department> getDepartments() {

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:background="@drawable/blue_border_rounded_cornwe"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:elevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/occurrence_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:text="Occurrence type"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_height="1.8dp"
+            android:layout_width="match_parent"
+            android:background="#30292626"
+            android:paddingBottom="10dip"
+            android:paddingTop="10dip" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:fontFamily="@font/poppins_medium"
+                android:text="Occurrence Info:" />
+
+            <TextView
+                android:id="@+id/occurrence_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_location"
+                android:drawableTint="@color/bluelight"
+                android:text="Occurrence location" />
+
+            <TextView
+                android:id="@+id/occurrence_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_copy_paste"
+                android:drawableTint="@color/bluelight"
+                android:text="Occurrence details" />
+
+            <TextView
+                android:id="@+id/occurrence_flag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_polls"
+                android:drawableTint="@color/bluelight"
+                android:text="Occurrence flag" />
+
+            <TextView
+                android:id="@+id/occurrence_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_message_delivered"
+                android:drawableTint="@color/bluelight"
+                android:text="Occurrence status" />
+
+            <TextView
+                android:id="@+id/occurrence_victim"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_users"
+                android:drawableTint="@color/bluelight"
+                android:text="Victim name" />
+            <TextView
+                android:id="@+id/occurrence_agent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="8dp"
+                android:drawableLeft="@drawable/ic_people"
+                android:drawableTint="@color/bluelight"
+                android:text="Agent name" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_height="1.8dp"
+            android:layout_width="match_parent"
+            android:background="#30292626"
+            android:paddingBottom="10dip"
+            android:paddingTop="10dip" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/occurrence_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/buttonstyle"
+                android:backgroundTint="@color/offline"
+                android:drawableLeft="@drawable/ic_edit"
+                android:drawableTint="@color/colorPrimaryDark"
+                android:padding="5dp"
+                android:textSize="18sp"
+                android:elevation="10dp" />
+            <TextView
+                android:id="@+id/occurrence_map"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/buttonstyle"
+                android:backgroundTint="@color/offline"
+                android:drawableLeft="@drawable/ic_location"
+                android:drawableTint="@color/bluelight"
+                android:padding="5dp"
+                android:textSize="18sp"
+                android:elevation="10dp" />
+            <TextView
+                android:id="@+id/occurrence_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/buttonstyle"
+                android:backgroundTint="@color/offline"
+                android:drawableLeft="@drawable/ic_calls"
+                android:drawableTint="@color/green_600"
+                android:padding="5dp"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

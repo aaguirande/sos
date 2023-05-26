@@ -8,24 +8,47 @@
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/drawable/centres_background.xml" value="0.1735" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/drawable/email_startblue.xml" value="0.1395" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/drawable/ic_baseline_map_24.xml" value="0.124" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/abc_action_bar_title_item.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/abc_alert_dialog_button_bar_material.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/abc_search_view.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/design_navigation_item.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/design_navigation_item_header.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/design_navigation_item_subheader.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/design_text_input_start_icon.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/fps_view.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/mtrl_calendar_horizontal.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/mtrl_calendar_vertical.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/test_design_checkbox.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/test_reflow_chipgroup.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/test_toolbar_custom_background.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/test_toolbar_surface.xml" value="0.1421875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout-x/text_view_without_line_height.xml" value="0.1421875" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_all_user.xml" value="0.11302083333333333" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_emergency_call.xml" value="0.2" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_login.xml" value="0.11302083333333333" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_login2.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/activity_splash.xml" value="0.2" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/app_bar_main.xml" value="0.1875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/calling_dialog.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/card_event_calendar.xml" value="0.264" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/cardview_calendar.xml" value="0.264" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/cardview_occurrece.xml" value="0.4" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/content_form.xml" value="0.16875" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/content_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/dropdown_list.xml" value="0.15052083333333333" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_calendar.xml" value="0.15885416666666666" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_gallery.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_home.xml" value="0.16875" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_maps.xml" value="0.20878623188405798" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_profile.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/fragment_slideshow.xml" value="0.15260416666666668" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/item_call.xml" value="0.16875" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/item_event_calendar.xml" value="0.171875" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/layout/occurrence_update_dialog.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/menu/activity_main_drawer.xml" value="0.11302083333333333" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/menu/main.xml" value="0.15260416666666668" />
+        <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/app/src/main/res/menu/occurrence.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/Dell/Documents/Monografia/Android app/sos app/uikit/src/main/res-components/calls/layout/activity_cometchat_callmanager.xml" value="0.1859375" />
       </map>
     </option>

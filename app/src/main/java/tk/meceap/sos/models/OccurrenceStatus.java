@@ -3,15 +3,14 @@ package tk.meceap.sos.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class EntityType {
-    String id, name, description, level;
+public class OccurrenceStatus { //Na tabela é emergency_types
+    String id, name, description;
 
-    public EntityType(JSONObject data) {
+    public OccurrenceStatus(JSONObject data) {
         try {
             this.id = data.getString("id");
             this.name = data.getString("name");
             this.description = data.getString("description");
-            this.level = data.getString("level");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -29,7 +28,12 @@ public class EntityType {
         return description;
     }
 
-    public String getLevel() {
-        return level;
+    @Override
+    public String toString() {
+        return "\nOccurencyType{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

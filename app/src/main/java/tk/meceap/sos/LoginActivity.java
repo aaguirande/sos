@@ -48,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Core.getInstance().setContext(this);
+        Core.getInstance().isAgent(false);
 
         login = (Button) findViewById(R.id.loginBtn);
         username = findViewById(R.id.username);
@@ -69,8 +70,9 @@ public class LoginActivity extends AppCompatActivity {
         if(email.isEmpty() || pass.isEmpty())
             Core.getInstance().alertFail("Email and password is required.");
         else{
+            Core.getInstance().setAgent(true);
             Core.getInstance().setUserLogged(new Agent());
-            Core.getInstance().serverLogin(email, pass, true);
+            Core.getInstance().serverLogin(email, pass, true, "agent");
         }
     }
 }

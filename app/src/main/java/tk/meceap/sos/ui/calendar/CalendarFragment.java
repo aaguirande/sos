@@ -35,6 +35,7 @@ public class CalendarFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         mViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
+        Core.getInstance().getMainActivity().viewIsAtHome = false;
         root = FragmentCalendarBinding.inflate(getLayoutInflater());
         return root.getRoot();
     }

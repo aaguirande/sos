@@ -22,6 +22,7 @@ public class DistanceTimeParser {
         try {
 
             jRoutes = jObject.getJSONArray("routes");
+            System.out.println(jRoutes.toString());
 
             jLegs = ((JSONObject) jRoutes.get(0)).getJSONArray("legs");
 

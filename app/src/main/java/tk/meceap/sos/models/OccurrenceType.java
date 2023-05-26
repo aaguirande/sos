@@ -3,10 +3,10 @@ package tk.meceap.sos.models;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class OccurencyType {
+public class OccurrenceType {
     String id, name, description;
 
-    public OccurencyType(JSONObject data) {
+    public OccurrenceType(JSONObject data) {
         try {
             this.id = data.getString("id");
             this.name = data.getString("name");
@@ -30,7 +30,7 @@ public class OccurencyType {
 
     @Override
     public String toString() {
-        return "\nOccurencyType{" +
+        return "\nOccurrenceType{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

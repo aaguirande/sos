@@ -41,6 +41,7 @@ public class CalendarFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Core.getInstance().getMainActivity().viewIsAtHome = false;
         viewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
         viewModel.getCalendars().observe(getViewLifecycleOwner(), new Observer<List<Calendar>>() {
