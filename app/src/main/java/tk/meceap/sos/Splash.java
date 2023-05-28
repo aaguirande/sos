@@ -134,7 +134,7 @@ public class Splash extends AppCompatActivity {
 
             @Override
             public void onError(CometChatException e) {
-                Snackbar.make(getCurrentFocus(), "Unable to setup you app, verify you network", Snackbar.LENGTH_INDEFINITE).setAction("Try Again", new View.OnClickListener() {
+                Snackbar.make(findViewById(R.id.logo), "Unable to setup you app, verify you network", Snackbar.LENGTH_INDEFINITE).setAction("Try Again", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         login(user);
@@ -170,10 +170,11 @@ public class Splash extends AppCompatActivity {
                     createUser(user);
                 }
                 else
-                    Snackbar.make(getCurrentFocus(), "Unable to login, verify you network", Snackbar.LENGTH_INDEFINITE).setAction("Try Again", new View.OnClickListener() {
+                    Snackbar.make(findViewById(R.id.logo), "Unable to login, verify you network", Snackbar.LENGTH_INDEFINITE).setAction("Try Again", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            logo.callOnClick();
+                            initApp();
+                            //logo.callOnClick();
                             //startActivity(new Intent(Splash.this, LoginActivity.class));
                         }
                     }).show();

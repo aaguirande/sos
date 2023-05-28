@@ -6,7 +6,7 @@ public class Constants {
     public static String authKey = "8e52d193a446e17e4c69bd00a1ce888ca53b6b75";
     public static String googleMapKey = "AIzaSyAyuaQS-AyNX5H9B0tntKHL9tpzrOnnBFs";
     public static String apiServer = "http://129.80.133.157/api";
-
+    public static final String[] dateFilter = {"today","yesterday","thisWeek","lastWeek","thisMonth","lastMonth","thisYear","lastYear","all","custom"};
     public static String urlTasks = apiServer + "/tasks";
     public static String urlTasksOptions = apiServer + "/tasks/options";
 

@@ -4,13 +4,15 @@
     <item
         android:id="@+id/menu_occurrence_refresh"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_refresh"
         android:title="@string/menu_occurrence_refresh"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/menu_occurrence_filter"
         android:orderInCategory="100"
+        android:icon="@drawable/ic_equalizer"
         android:title="@string/menu_occurrence_filter"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/menu_logout"
         android:orderInCategory="100"

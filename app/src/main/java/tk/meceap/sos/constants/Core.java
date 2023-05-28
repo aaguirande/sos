@@ -6,6 +6,7 @@ import static com.android.volley.Request.Method.POST;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -22,6 +23,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
@@ -68,6 +71,7 @@ import tk.meceap.sos.models.CalendarEventStatus;
 import tk.meceap.sos.models.Call;
 import tk.meceap.sos.models.Department;
 import tk.meceap.sos.models.Occurrence;
+import tk.meceap.sos.models.OccurrenceFilter;
 import tk.meceap.sos.models.OccurrenceStatus;
 import tk.meceap.sos.models.OccurrenceType;
 import tk.meceap.sos.models.Province;
@@ -94,6 +98,7 @@ public class Core {
     private Agent userLogged = new Agent();
     String location;
     private Occurrence occurrence;
+    private OccurrenceFilter occurrenceFilter = new OccurrenceFilter();
     private boolean isAgent = false;
     private boolean isLoadingRequest = false;
     private RequestQueue requestQueue;
@@ -126,6 +131,7 @@ public class Core {
     }
 
     private NavController navController;
+
     public void displaySelectedScreen(int itemId) {
         navController.navigate(itemId);
     }
@@ -165,6 +171,7 @@ public class Core {
     public boolean isAgent() {
         return isAgent;
     }
+
     public void isAgent(boolean isAgent) {
         this.isAgent = isAgent;
     }
@@ -227,8 +234,13 @@ public class Core {
             } else
                 return;
         }
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Constants.LOCATION_REFRESH_TIME,
-                Constants.LOCATION_REFRESH_DISTANCE, mLocationListener);
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Constants.LOCATION_REFRESH_TIME,
+                    Constants.LOCATION_REFRESH_DISTANCE, mLocationListener);
+
+        } catch (Exception e){
+            alertFailLocation();
+        }
 
     }
 
@@ -357,7 +369,7 @@ public class Core {
                     JSONArray dados = response.getJSONArray("dados");
                     System.out.println(dados);
 
-                    if(!dados.isNull(0)){
+                    if (!dados.isNull(0)) {
                         for (int i = 0; i < dados.length(); i++) {
                             occurrence.setCallList(new Call(
                                     dados.getJSONObject(i).getString("call_id"),
@@ -508,9 +520,17 @@ public class Core {
     public JSONObject getParamsOccurrence(Boolean completed, String occurrenceType, String dateType, String startDate, String endDate) {
         JSONObject params = new JSONObject();
         try {
+
+            /*
+            * filters: {"tasks":{"completed":null,"flag":null,"allocated_to":null}}
+              intervals: {"tasks":{"reminder":{"min":"2023-05-01 00:00:00","max":"2023-05-31 23:59:59"}}}
+                params: {"dateFilter":"thisMonth","overdue":null}
+                meta: {"start":0,"length":10,"sort":false,"search":"","forceInfo":false,"searchMode":"full"}
+            * */
             params
                     .put("completed", completed)
                     .put("department", 3)
+                    .put("flag", 3)
                     .put("occurrence_type", occurrenceType)
                     .put("user_id", Core.getInstance().getUserLogged().getUserId())
                     .put("start_date", startDate)
@@ -651,7 +671,22 @@ public class Core {
                 })).show();
     }
 
+    public void alertFailLocation() {
+        new AlertDialog.Builder(activity)
+                .setTitle("GPS is settings")
+                .setIcon(R.drawable.logo)
+                .setMessage("GPS is not enabled. Do you want to go to settings menu?")
+                .setNegativeButton("Cancel", (dialog, i) -> {
+                    dialog.dismiss();
+                })
+                .setPositiveButton("Settings", ((dialog, which) -> {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    getContext().startActivity(intent);
+                })).show();
+    }
+
     RecyclerView itemsEvents;
+
     public void eventCalendarLogs(List<CalendarEventLog> eventLog) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity)
                 .setTitle("Event log")
@@ -667,6 +702,172 @@ public class Core {
         itemsEvents = dialogView.findViewById(R.id.events);
         itemsEvents.setLayoutManager(new LinearLayoutManager(activity));
         itemsEvents.setAdapter(new CalendarEventAdapter(eventLog));
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+
+    public void showOccurrenceFilter() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity)
+                .setTitle("Filter occurrence")
+                .setNegativeButton("Cancel", (dialog, i) -> {
+                    dialog.dismiss();
+                })
+                .setPositiveButton("Search", (dialog, i) -> {
+                    dialog.dismiss();
+                })
+                .setIcon(R.drawable.logo);
+
+        SwitchCompat complete;
+        RadioButton error, warning, info, success;
+        ArrayAdapter<String> adapterOccurrenceType, adapterDateType;
+        AutoCompleteTextView completeTextView, completeDateType;
+        Button btnFrom, btnTo;
+
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.occurrence_filter_dialog, null);
+
+        completeTextView = dialogView.findViewById(R.id.autoCompleteTextView);
+        completeDateType = dialogView.findViewById(R.id.autoCompleteDate);
+
+        complete = dialogView.findViewById(R.id.occurrence_completed);
+        error = dialogView.findViewById(R.id.radio_error);
+        warning = dialogView.findViewById(R.id.radio_warning);
+        info = dialogView.findViewById(R.id.radio_info);
+        success = dialogView.findViewById(R.id.radio_success);
+
+        btnFrom = dialogView.findViewById(R.id.btn_from);
+        btnTo = dialogView.findViewById(R.id.btn_to);
+
+        if(getOccurrenceFilter().getFlag() != null)
+        switch (getOccurrenceFilter().getFlag()) {
+            case "1":
+                error.setChecked(true);
+                break;
+            case "2":
+                warning.setChecked(true);
+                break;
+            case "3":
+                info.setChecked(true);
+                break;
+            case "4":
+                success.setChecked(true);
+                break;
+        }
+
+        if(getOccurrenceFilter().getCompleted() != null)
+        switch (getOccurrenceFilter().getCompleted()) {
+            case "0":
+                complete.setChecked(false);
+                break;
+            case "1":
+                complete.setChecked(true);
+                break;
+        }
+
+        if(getOccurrenceFilter().getDateType() != null && getOccurrenceFilter().getDateType().equals("custom")){
+            btnFrom.setVisibility(View.VISIBLE);
+            btnTo.setVisibility(View.VISIBLE);
+            btnFrom.setText(getOccurrenceFilter().getDateFrom());
+            btnTo.setText(getOccurrenceFilter().getDateTo());
+        } else {
+            btnFrom.setVisibility(View.GONE);
+            btnTo.setVisibility(View.GONE);
+        }
+
+        //Initializing form to update occurrence
+        adapterOccurrenceType = new ArrayAdapter<String>(dialogView.getContext(), R.layout.dropdown_list, getListOccurrenceType());
+
+        completeTextView.setAdapter(adapterOccurrenceType);
+        completeTextView.setText(getOccurrenceFilter().getOccurrenceType(), false);
+        completeTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println("\n\n\n\n++++++++++++++++++++++++\n\n\n\n\n" + parent.getItemAtPosition(position).toString());
+                getOccurrenceFilter().setOccurrenceType(parent.getItemAtPosition(position).toString());
+            }
+        });
+
+        //Initializing form to update occurrence
+        adapterDateType = new ArrayAdapter<String>(dialogView.getContext(), R.layout.dropdown_list, Constants.dateFilter);
+
+        completeDateType.setAdapter(adapterDateType);
+        completeDateType.setText(getOccurrenceFilter().getDateType(), false);
+        completeDateType.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                System.out.println("\n\n\n\n++++++++++++++++++++++++\n\n\n\n\n" + parent.getItemAtPosition(position).toString());
+                getOccurrenceFilter().setDateType(parent.getItemAtPosition(position).toString());
+                if (parent.getItemAtPosition(position).toString().equalsIgnoreCase("custom")) {
+                    btnFrom.setVisibility(View.VISIBLE);
+                    btnTo.setVisibility(View.VISIBLE);
+                } else {
+                    btnFrom.setVisibility(View.GONE);
+                    btnTo.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        error.setOnClickListener(v -> getOccurrenceFilter().setFlag("1"));
+        warning.setOnClickListener(v -> getOccurrenceFilter().setFlag("2"));
+        info.setOnClickListener(v -> getOccurrenceFilter().setFlag("3"));
+        success.setOnClickListener(v -> getOccurrenceFilter().setFlag("4"));
+
+        complete.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) getOccurrenceFilter().setCompleted("1");
+            else getOccurrenceFilter().setCompleted("0");
+        });
+
+        btnFrom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final java.util.Calendar c = java.util.Calendar.getInstance();
+
+                int year = c.get(java.util.Calendar.YEAR);
+                int month = c.get(java.util.Calendar.MONTH);
+                int day = c.get(java.util.Calendar.DAY_OF_MONTH);
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        activity,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year,
+                                                  int monthOfYear, int dayOfMonth) {
+                                // on below line we are setting date to our text view.
+                                btnFrom.setText(year + "-" + (monthOfYear + 1) + "-" + dayOfMonth);
+                                getOccurrenceFilter().setDateFrom(year + "-" + (monthOfYear + 1) + "-" + dayOfMonth);
+                            }
+                        }, year, month, day);
+                datePickerDialog.show();
+            }
+        });
+
+        btnTo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final java.util.Calendar c = java.util.Calendar.getInstance();
+
+                int year = c.get(java.util.Calendar.YEAR);
+                int month = c.get(java.util.Calendar.MONTH);
+                int day = c.get(java.util.Calendar.DAY_OF_MONTH);
+
+                DatePickerDialog datePickerDialog = new DatePickerDialog(
+                        activity,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year,
+                                                  int monthOfYear, int dayOfMonth) {
+                                // on below line we are setting date to our text view.
+                                btnTo.setText(year + "-" + (monthOfYear + 1) + "-" + dayOfMonth);
+                                getOccurrenceFilter().setDateTo(year + "-" + (monthOfYear + 1) + "-" + dayOfMonth);
+
+                            }
+                        }, year, month, day);
+                datePickerDialog.show();
+            }
+        });
+
+        dialogBuilder.setView(dialogView);
 
         AlertDialog alertDialog = dialogBuilder.create();
         alertDialog.show();
@@ -697,24 +898,37 @@ public class Core {
         adapter = new ArrayAdapter<String>(dialogView.getContext(), R.layout.dropdown_list, getListOccurrenceType());
 
         completeTextView.setAdapter(adapter);
+        completeTextView.setText(getSelectedOccurency().getOccurencyType().getName(), false);
         completeTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                System.out.println(  "\n\n\n\n++++++++++++++++++++++++\n\n\n\n\n"+parent.getItemAtPosition(position).toString());
+                System.out.println("\n\n\n\n++++++++++++++++++++++++\n\n\n\n\n" + parent.getItemAtPosition(position).toString());
                 getSelectedOccurency().setOccurrenceType(getOccurrenceTypeByName(parent.getItemAtPosition(position).toString()));
             }
         });
 
-        switch (getSelectedOccurency().getFlag()){
-            case "1": error.setChecked(true); break;
-            case "2": warning.setChecked(true); break;
-            case "3": info.setChecked(true); break;
-            case "4": success.setChecked(true); break;
+        switch (getSelectedOccurency().getFlag()) {
+            case "1":
+                error.setChecked(true);
+                break;
+            case "2":
+                warning.setChecked(true);
+                break;
+            case "3":
+                info.setChecked(true);
+                break;
+            case "4":
+                success.setChecked(true);
+                break;
         }
 
-        switch (getSelectedOccurency().getCompleted()){
-            case "0": complete.setChecked(false); break;
-            case "1": complete.setChecked(true); break;
+        switch (getSelectedOccurency().getCompleted()) {
+            case "0":
+                complete.setChecked(false);
+                break;
+            case "1":
+                complete.setChecked(true);
+                break;
         }
 
         victimName.setText(getSelectedOccurency().getVictimName());
@@ -727,8 +941,8 @@ public class Core {
         success.setOnClickListener(v -> getSelectedOccurency().setFlag("4"));
 
         complete.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked)  getSelectedOccurency().setCompleted("1");
-            else  getSelectedOccurency().setCompleted("0");
+            if (isChecked) getSelectedOccurency().setCompleted("1");
+            else getSelectedOccurency().setCompleted("0");
         });
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity)
@@ -759,9 +973,9 @@ public class Core {
                     occurencies.get(index).setOccurrenceType(getSelectedOccurency().getOccurrenceType());
 
                     System.out.println(occurencies.get(index).toString());
-                    System.out.println(Constants.urlTasks +"/"+ occurencies.get(index).getId());
+                    System.out.println(Constants.urlTasks + "/" + occurencies.get(index).getId());
                     System.out.println(occurencies.get(index).getUpdateParams());
-                    Core.getInstance().serverRequest(Request.Method.PATCH, Constants.urlTasks +"/"+ occurencies.get(index).getId(), occurencies.get(index).getUpdateParams(), Constants.REQ_UPDATE_OCCURRENCE);
+                    Core.getInstance().serverRequest(Request.Method.PATCH, Constants.urlTasks + "/" + occurencies.get(index).getId(), occurencies.get(index).getUpdateParams(), Constants.REQ_UPDATE_OCCURRENCE);
 
                     mainActivity.navController.navigate(R.id.nav_home);
                     dialog.dismiss();
@@ -774,7 +988,7 @@ public class Core {
         alertDialog.show();
     }
 
-    public List<String> getListOccurrenceType(){
+    public List<String> getListOccurrenceType() {
         List<String> items = new ArrayList<String>();
         for (OccurrenceType d : occurrenceTypes) {
             items.add(d.getName());
@@ -782,10 +996,10 @@ public class Core {
         return items;
     }
 
-    public OccurrenceType getOccurrenceTypeByName(String name){
+    public OccurrenceType getOccurrenceTypeByName(String name) {
         for (OccurrenceType d : occurrenceTypes) {
             System.out.println(d.getName().equalsIgnoreCase(name));
-            if(d.getName().equalsIgnoreCase(name)) return d;
+            if (d.getName().equalsIgnoreCase(name)) return d;
         }
         return null;
     }
@@ -798,19 +1012,19 @@ public class Core {
             setLocation(
                     String.format("%.6f", location.getLatitude()).replace(",", ".")
                             + "," +
-                    String.format("%.6f", location.getLongitude()).replace(",", ".")
+                            String.format("%.6f", location.getLongitude()).replace(",", ".")
             );
             userLocation = new LatLng(
                     Double.valueOf(String.format("%.6f", location.getLatitude()).replace(",", ".")),
                     Double.valueOf(String.format("%.6f", location.getLongitude()).replace(",", "."))
             );
 
-            if(isAgent)
+            if (isAgent)
                 Core.getInstance().serverRequest(Request.Method.POST, Constants.urlAgentsLocation, getParamsAgentLocation(), Constants.REQ_AGENT_LOCATION);
         }
     };
 
-    public  LatLng getLocaLatLng(String[] s){
+    public LatLng getLocaLatLng(String[] s) {
         System.out.println(Arrays.toString(s));
         return new LatLng(
                 Double.valueOf(s[0]),
@@ -872,5 +1086,13 @@ public class Core {
 
     public void setDepartments(List<Department> departments) {
         this.departments = departments;
+    }
+
+    public OccurrenceFilter getOccurrenceFilter() {
+        return occurrenceFilter;
+    }
+
+    public void setOccurrenceFilter(OccurrenceFilter occurrenceFilter) {
+        this.occurrenceFilter = occurrenceFilter;
     }
 }

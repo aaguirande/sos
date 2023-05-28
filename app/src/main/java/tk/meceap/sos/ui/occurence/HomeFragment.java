@@ -77,10 +77,13 @@ public class HomeFragment extends Fragment {
                 // Not implemented here
                 return false;
             case R.id.menu_occurrence_filter:
+                Core.getInstance().showOccurrenceFilter();
+                // Do Fragment menu item stuff here
+                return true;
+            case R.id.menu_logout:
 
                 // Do Fragment menu item stuff here
                 return true;
-
             default:
                 break;
         }
