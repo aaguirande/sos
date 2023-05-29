@@ -21,7 +21,9 @@ public class OccurenceAdapter extends RecyclerView.Adapter<OccurenceAdapter.View
     private Context context;
     private List<Occurrence> occurencies;
 
-    public OccurenceAdapter(List<Occurrence> occurencies) { this.occurencies = occurencies; }
+    public OccurenceAdapter(List<Occurrence> occurrences) {
+        this.occurencies = occurrences;
+    }
 
     @NonNull
     @Override

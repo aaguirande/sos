@@ -29,6 +29,7 @@
     <string name="use_credentials">Login using credentials</string>
     <string name="error_conect">Unable to connect to the server, click MECEAP logo to refresh</string>
     <string name="error_process">Please wait while we process the information</string>
+    <string name="no_records">No records were found</string>
 
 
     <string name="menu_home">Home</string>

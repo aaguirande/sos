@@ -106,6 +106,7 @@ public class Core {
     private Occurrence selectedOccurrence;
     private int callAttempts = 0;
     private Calendar selectedCalendar;
+    public boolean occurrencePagination = false;
 
     public Core() {
         this.agents = new LinkedList<>();
@@ -411,9 +412,18 @@ public class Core {
                 }
                 break;
             case Constants.REQ_OCCURENCES:
-                System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.toString());
                 try {
-                    JSONArray dados = response.getJSONArray("data");
+                    System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.getJSONObject("data").getString("current_page"));
+                    System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.getJSONObject("data").getString("last_page"));
+                    System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.getJSONObject("data").getString("per_page"));
+                    System.out.println("\n\n\nVendo a resposta\n\n\n\n" + response.getJSONObject("data").getString("total"));
+                    Core.getInstance().getOccurrenceFilter().setOccurrenceFilterPagination(
+                            response.getJSONObject("data").getInt("total"),
+                            response.getJSONObject("data").getInt("per_page"),
+                            response.getJSONObject("data").getInt("last_page"),
+                            response.getJSONObject("data").getInt("current_page")
+                    );
+                    JSONArray dados = response.getJSONObject("data").getJSONArray("data");
 
                     for (int i = 0; i < dados.length(); i++) {
                         if (!isOccurrenceById(occurencies, dados.getJSONObject(i).getString("id")))
@@ -502,7 +512,7 @@ public class Core {
                         if (!isOccurencyTypeById(occurrenceTypes, dados.getJSONObject(i).getString("id")))
                             occurrenceTypes.add(new OccurrenceType(dados.getJSONObject(i)));
                     } //after inititialization of Event calendar propety
-                    Core.getInstance().serverRequest(POST, Constants.urlTasksOptions, getParamsOccurrence(false, "", "all", "", ""), Constants.REQ_OCCURENCES);
+                    Core.getInstance().serverRequest(POST, Constants.urlTasksOptions, getParamsOccurrence(false, 1, "", "all", "", ""), Constants.REQ_OCCURENCES);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -517,7 +527,7 @@ public class Core {
         }
     }
 
-    public JSONObject getParamsOccurrence(Boolean completed, String occurrenceType, String dateType, String startDate, String endDate) {
+    public JSONObject getParamsOccurrence(Boolean completed, int page, String occurrenceType, String dateType, String startDate, String endDate) {
         JSONObject params = new JSONObject();
         try {
 
@@ -529,6 +539,7 @@ public class Core {
             * */
             params
                     .put("completed", completed)
+                    .put("page", page)
                     .put("department", 3)
                     .put("flag", 3)
                     .put("occurrence_type", occurrenceType)
